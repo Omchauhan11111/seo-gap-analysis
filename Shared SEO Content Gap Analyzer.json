@@ -1,0 +1,1044 @@
+{
+  "name": "Shared SEO Content Gap Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n\n  let userURL = String(item.json.userURL || \"\").trim();\n  let competitorURL = String(item.json.competitorURL || \"\").trim();\n  let email = String(item.json.userEmail || \"\").trim();\n\n  function isValidURL(url) {\n    return url.startsWith(\"http\") && url.includes(\".\");\n  }\n\n  function isValidEmail(email) {\n    return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n  }\n\n  item.json.isValid =\n    isValidURL(userURL) &&\n    isValidURL(competitorURL) &&\n    isValidEmail(email);\n\n  // ✅ FINAL STATUS UPDATE\n  item.json.jobId = item.json.jobId.toString().trim(); // space remove\n  item.json.step = 5;\n  item.json.status = \"done\";\n\n\n}\n\nreturn $input.all();"
+      },
+      "id": "b0d62039-803a-4101-91d6-2e95347bd73c",
+      "name": "Validate and Normalize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        192
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.isValid }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "248d4a1a-5d3d-403d-9fb6-7451e1f7426c",
+      "name": "IF Valid Input",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        592,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.userEmail }}",
+        "subject": "SEO Analysis Error — Invalid Input",
+        "emailType": "text",
+        "message": "We received your request but the URLs or email address provided were invalid.\n\nPlease resubmit with a valid website URL, competitor URL, and email address.",
+        "options": {}
+      },
+      "id": "fac41ba0-667c-42df-8498-e081cbc55dee",
+      "name": "Send Validation Error Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        400
+      ],
+      "webhookId": "aa4c5f33-b593-4f5a-a23b-73de6b68dde2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ilFBhYPRbUf29pP5",
+          "name": "Gmail OAuth2 API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "targetURL",
+              "value": "={{ $json.userURL }}"
+            },
+            {
+              "name": "siteType",
+              "value": "user"
+            },
+            {
+              "name": "userURL",
+              "value": "={{ $json.userURL }}"
+            },
+            {
+              "name": "competitorURL",
+              "value": "={{ $json.competitorURL }}"
+            },
+            {
+              "name": "userEmail",
+              "value": "={{ $json.userEmail }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a391cf22-3f81-4855-a1a9-3a030bc2cab5",
+      "name": "Set User Target",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        960,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "targetURL",
+              "value": "={{ $json.competitorURL }}"
+            },
+            {
+              "name": "siteType",
+              "value": "competitor"
+            },
+            {
+              "name": "userURL",
+              "value": "={{ $json.userURL }}"
+            },
+            {
+              "name": "competitorURL",
+              "value": "={{ $json.competitorURL }}"
+            },
+            {
+              "name": "userEmail",
+              "value": "={{ $json.userEmail }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "811679d4-3b4f-4333-84cf-e5137208bc4c",
+      "name": "Set Competitor Target",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        960,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "id": "db6ce1d5-ef70-4b9a-8414-9645b09784b1",
+      "name": "Filter User URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        16
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "id": "83c46608-fa50-451a-8bf5-8ab1caf8a0fd",
+      "name": "Filter Competitor URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        208
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior SEO consultant with 10+ years of real client experience.\n\nYour task is to perform a STRICT SEO gap analysis between two websites using ONLY the data provided.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️ ABSOLUTE RULES — NEVER BREAK THESE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✗ DO NOT assume anything beyond the given data  \n✗ DO NOT use any external knowledge  \n✗ DO NOT invent keywords, services, or facts  \n✗ DO NOT rewrite or paraphrase keywords  \n✗ DO NOT generate generic SEO advice  \n✗ DO NOT output long sentences as keywords  \n\n✓ ONLY use the exact text provided in Title, H1, Meta Description, and Content  \n✓ If any field is missing or empty → return: \"Insufficient data for this section\"  \n✓ Keywords MUST be exact phrases from content (no modification)  \n✓ Keywords must be 2–4 words only  \n✓ Keep analysis short, factual, and evidence-based  \n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📥 INPUT DATA (DYNAMIC)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWEBSITE A:\nURL: {{$json.user.url}}\nTitle: {{$json.user.title}}\nH1: {{$json.user.h1}}\nMeta Description: {{$json.user.metaDescription || $json.user.meta}}\nContent: {{$json.user.bodyText || $json.user.content}}\n\nWEBSITE B:\nURL: {{$json.competitor.url}}\nTitle: {{$json.competitor.title}}\nH1: {{$json.competitor.h1}}\nMeta Description: {{$json.competitor.metaDescription || $json.competitor.meta}}\nContent: {{$json.competitor.bodyText || $json.competitor.content}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🧠 ANALYSIS LOGIC (STRICT)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n1. KEYWORD EXTRACTION:\n- Extract only meaningful phrases (2–4 words)\n- Must appear EXACTLY in content\n- No sentence fragments\n- No invented keywords\n\n2. INTENT CLASSIFICATION:\n- Informational → knowledge-based phrases  \n- Transactional → action-based phrases  \n- Commercial → value/benefit phrases  \n- Navigational → brand/entity phrases (only if clearly present)\n\n3. INDUSTRY MATCH:\n- Compare only based on visible words\n- If unclear → return false with reason\n\n4. CONTENT COMPARISON:\n- Use exact phrases or very short summaries\n- No assumptions\n\n5. SEO WEAKNESS:\n- Only highlight gaps visible in given data\n- MUST include direct quote evidence\n\n6. RECOMMENDATIONS:\n- Must directly map to missing content/keywords\n- Target keyword MUST exist in WEBSITE B content\n\n7. SEO SCORING:\n- Score MUST be between 0–100\n- Base scoring ONLY on:\n  - keyword presence\n  - content depth\n  - clarity of messaging\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📊 OUTPUT FORMAT — RETURN JSON ONLY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{\n  \"websiteA\": \"{{$json.user.url}}\",\n  \"websiteB\": \"{{$json.competitor.url}}\",\n\n  \"industryMatch\": true,\n  \"industryMatchReason\": \"based only on visible content terms\",\n\n  \"keywordGaps\": [\n    {\n      \"keyword\": \"exact phrase from content\",\n      \"foundIn\": \"A / B / Both\",\n      \"intent\": \"Informational / Transactional / Commercial / Navigational\",\n      \"whyItMatters\": \"based strictly on visible usage\"\n    }\n  ],\n\n  \"contentDifferences\": [\n    {\n      \"section\": \"Title / H1 / Meta / Body\",\n      \"websiteA\": \"exact phrase or short summary\",\n      \"websiteB\": \"exact phrase or short summary\",\n      \"impact\": \"clear SEO impact based on difference\"\n    }\n  ],\n\n  \"seoWeaknesses\": [\n    {\n      \"problem\": \"specific issue\",\n      \"evidence\": \"direct quote comparison\",\n      \"impact\": \"why it affects SEO\"\n    }\n  ],\n\n  \"whyWebsiteBIsBetter\": \"2–3 sentences strictly based on content comparison\",\n\n  \"recommendations\": [\n    {\n      \"action\": \"specific fix\",\n      \"location\": \"Title / H1 / Meta / Body\",\n      \"targetKeyword\": \"exact keyword from WEBSITE B content\"\n    }\n  ],\n\n  \"seoScore\": {\n    \"overall\": 0,\n    \"keywordTargeting\": 0,\n    \"contentQuality\": 0,\n    \"seoStrength\": 0,\n    \"scoreBasis\": \"based only on visible keyword usage and content depth\"\n  }\n}",
+        "options": {
+          "systemMessage": ""
+        }
+      },
+      "id": "e5191af9-bbc7-4d8f-b886-19fcea2e672b",
+      "name": "AI Gap Analysis",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        2880,
+        80
+      ],
+      "alwaysOutputData": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an HTML email report designer.\n\nYour task is to convert the provided SEO analysis JSON into a PROFESSIONAL, CLEAN, TABLE-BASED HTML EMAIL REPORT.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📥 INPUT DATA (DYNAMIC)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nSEO ANALYSIS JSON:\n{{ JSON.stringify($json) }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️ CRITICAL RULES — NEVER BREAK\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n1. Output ONLY raw HTML (NO markdown, NO explanations)\n2. Do NOT include <!DOCTYPE>, <html>, or <body> tags\n3. Use ONLY inline CSS (email-compatible)\n4. Do NOT use box-shadow, flexbox, grid, or external CSS\n5. Use only tables for layout (email-safe)\n6. Do NOT change \"User Website\" and \"Competitor Website\" labels\n7. Do NOT add or modify any data from JSON\n8. If any value is missing, null, empty, or says \"Insufficient data for this section\" → display exactly the same text\n9. Safely handle long text (wrap properly, no overflow)\n10. Treat JSON as structured object (not string)\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📑 IMPORTANT DATA ACCESS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nUse fields directly like:\n- websiteA\n- websiteB\n- industryMatch\n- industryMatchReason\n- keywordGaps[]\n- contentDifferences[]\n- seoWeaknesses[]\n- whyWebsiteBIsBetter\n- recommendations[]\n- seoScore.overall\n- seoScore.keywordTargeting\n- seoScore.contentQuality\n- seoScore.seoStrength\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎯 FINAL OUTPUT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nReturn ONLY clean HTML code (email-ready).",
+        "options": {
+          "systemMessage": "=You are a senior SEO consultant writing professional client reports.\nOutput only valid HTML with inline CSS. Do not wrap in markdown code blocks.\nDo not include any text before or after the HTML document.\nAll lists must use single-column layout only. Never use CSS columns, flexbox rows, or grid for lists.\nEach list item must be on its own line. Use display:block for all li elements.\n\nWrite this in bottom of report SEO Report 2026 By Digital Go Where"
+        }
+      },
+      "id": "f7c147b4-ef07-4bd0-ace6-64c71efd9996",
+      "name": "AI Generate Report",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        3408,
+        80
+      ],
+      "alwaysOutputData": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.userEmail }}",
+        "subject": "=Your SEO Report ",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "765b696a-8e44-4d1e-af27-613264a8e58c",
+      "name": "Send Report Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3920,
+        16
+      ],
+      "webhookId": "d1a302e7-d818-4b82-a0c4-5c87ccbc2c4d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ilFBhYPRbUf29pP5",
+          "name": "Gmail OAuth2 API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {},
+      "id": "49c2a816-6e43-4775-81de-496469de4e5a",
+      "name": "Merge Job IDs",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1472,
+        128
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.targetURL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1824,
+        160
+      ],
+      "id": "79604cf8-3e30-4a0f-8d29-9204ba6f8a70",
+      "name": "HTTP Request",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of $input.all()) {\n\n  let html = item.json.data || \"\";\n\n  // ❌ Remove script/style पहले ही\n  html = html\n    .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n    .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n    .replace(/<!--[\\s\\S]*?-->/g, '');\n\n  // ✅ CLEAN FUNCTION\n  const clean = (t) =>\n    (t || \"\")\n      .replace(/<[^>]*>/g, \" \")\n      .replace(/\\s+/g, \" \")\n      .trim();\n\n  // ✅ TITLE\n  const titleMatch = html.match(/<title[^>]*>(.*?)<\\/title>/i);\n\n  // ✅ H1\n  const h1Match = html.match(/<h1[^>]*>(.*?)<\\/h1>/i);\n\n  // ✅ META DESCRIPTION (multiple handle)\n  const metaMatches = [...html.matchAll(/<meta\\s+name=\"description\"\\s+content=\"([^\"]*)\"/gi)];\n  const meta = metaMatches.length > 0\n    ? metaMatches[metaMatches.length - 1][1]\n    : \"\";\n\n  // 🔥🔥🔥 REAL BODY EXTRACTION (MAIN FIX)\n  let bodyMatch = html.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i);\n  let bodyHTML = bodyMatch ? bodyMatch[1] : html;\n\n  // ❌ Remove unwanted sections\n  bodyHTML = bodyHTML\n    .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n    .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n    .replace(/<noscript[^>]*>[\\s\\S]*?<\\/noscript>/gi, '')\n    .replace(/<svg[^>]*>[\\s\\S]*?<\\/svg>/gi, '')\n    .replace(/<header[\\s\\S]*?<\\/header>/gi, '')\n    .replace(/<footer[\\s\\S]*?<\\/footer>/gi, '')\n    .replace(/<nav[\\s\\S]*?<\\/nav>/gi, '');\n\n  // ❌ Remove JSON schema + JS junk\n  bodyHTML = bodyHTML\n    .replace(/\\{[\\s\\S]*?\\}/g, ' ')\n    .replace(/window\\.[\\s\\S]*?;/g, ' ')\n    .replace(/!function\\([\\s\\S]*?\\}/g, ' ');\n\n  // ✅ FINAL CLEAN BODY TEXT\n  const bodyText = bodyHTML\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .slice(0, 1200);\n\n  output.push({\n    json: {\n      url: item.json.url || item.json.userURL || \"\",\n      siteType: item.json.siteType || \"unknown\",\n      userEmail: item.json.userEmail || \"\",\n      userURL: item.json.userURL || \"\",\n      competitorURL: item.json.competitorURL || \"\",\n\n      title: clean(titleMatch?.[1] || \"\"),\n      h1: clean(h1Match?.[1] || titleMatch?.[1] || \"\"),\n      metaDescription: clean(meta),\n      bodyText: bodyText\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        112
+      ],
+      "id": "2f9374a5-a518-4d97-a727-4760b957562e",
+      "name": "EXTRACT DATA"
+    },
+    {
+      "parameters": {
+        "jsCode": "let html = $json.output || $json.html || \"\";\n\nhtml = html\n  .replace(/\\\\n/g, \"\")\n  .replace(/\\\\\"/g, '\"')\n  .replace(/\\s+/g, \" \");\n\n// 🔥 FINAL RETURN\nreturn [{\n  json: {\n    html: html.trim(),  // ✅ sirf report\n\n    // ✅ ye report me nahi jayega (separate fields)\n    userEmail: $node[\"Parse Gap Analysis Response\"].json.userEmail,\n    jobId: $node[\"Parse Gap Analysis Response\"].json.jobId,\n    userURL: $node[\"Parse Gap Analysis Response\"].json.userURL,\n    competitorURL: $node[\"Parse Gap Analysis Response\"].json.competitorURL\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        304
+      ],
+      "id": "7c2ff0b3-9a9d-48c6-a1e8-a5ba58e3b93f",
+      "name": "EXTRACT REPORT HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n\n  item.json.jobId = String(item.json.jobId || \"\").trim();\n\n  item.json.step = 5;\n  item.json.status = \"done\";\n  item.json.message = \"Email sent successfully\";\n\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4176,
+        272
+      ],
+      "id": "f85024dd-5371-483b-870f-f7e1ceb169a7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "seo-gap-analysis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        192
+      ],
+      "id": "c48fdeec-37f4-4d94-a572-5c09be4dacbb",
+      "name": "Webhook",
+      "webhookId": "e534fe83-fee7-4cb1-8168-1a15deb3ff1a"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nconst httpItems = $input.all();\n\n// ✅ upstream se data lo\nconst userData = $items(\"Set User Target\")[0]?.json || {};\nconst compData = $items(\"Set Competitor Target\")[0]?.json || {};\n\nfor (let i = 0; i < httpItems.length; i++) {\n\n  const httpItem = httpItems[i];\n\n  const htmlData = httpItem.json.data || httpItem.json.body || \"\";\n\n  output.push({\n    json: {\n      ...httpItem.json,   // 🔥 VERY IMPORTANT (ye sab data carry karega)\n\n      data: htmlData,\n\n      targetURL:     userData.targetURL     || compData.targetURL     || \"\",\n      siteType:      userData.siteType      || compData.siteType      || \"unknown\",\n\n      // 🔥 FIXED (always attach explicitly)\n      userEmail:     userData.userEmail ?? httpItem.json.userEmail ?? \"\",\n      userURL:       userData.userURL ?? \"\",\n      competitorURL: compData.competitorURL ?? \"\"\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        528
+      ],
+      "id": "b2591814-d246-494c-aa52-81438532251b",
+      "name": "Code in JavaScript1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const itemsOut = [];\n\n// 🔥 original data wapas uthao\nconst userData = $items(\"Merge\")[0]?.json || {};\n\nfor (const item of items) {\n\n  let raw = item.json.output || \"\";\n\n  raw = raw.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n\n  let parsed;\n\n  try {\n    parsed = JSON.parse(raw);\n  } catch (e) {\n    parsed = {};\n  }\n\n  itemsOut.push({\n    json: {\n      ...parsed,\n\n      // 🔥 ALWAYS REATTACH FROM SOURCE\n      userEmail: userData.userEmail || \"\",\n      userURL: userData.userURL || \"\",\n      competitorURL: userData.competitorURL || \"\"\n    }\n  });\n}\n\nreturn itemsOut;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        336
+      ],
+      "id": "44e4b27c-1be6-4214-9265-206b4c5bd379",
+      "name": "Parse Gap Analysis Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobId = Date.now().toString();\n\n// UI se aaye ya Postman se — dono handle karo\nconst body = $json.body || $json;\n\nconst data = $getWorkflowStaticData('global');\ndata[jobId] = {\n  status: \"running\",\n  step: 1,\n  message: \"Request received\"\n};\n\nreturn [\n  {\n    json: {\n      ...body,\n      jobId,\n      userEmail: body.email,\n      userURL: body.myWebsite,\n      competitorURL: body.competitorWebsite\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        192
+      ],
+      "id": "0aec5f25-c5b1-4b64-85cb-f95b62ebb797",
+      "name": "Generate Job ID"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"jobId\": \"{{$json.jobId}}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -384,
+        192
+      ],
+      "id": "1369a2f6-10d5-4e5d-9efb-a8c2dadff1ca",
+      "name": "Return Job ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  return {\n    json: {\n      ...item.json, // 🔥 VERY IMPORTANT\n      status: \"running\",\n      step: 1,\n      message: \"Request received\"\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        192
+      ],
+      "id": "d5b67d1c-8a7b-4008-9595-bad8681bbcea",
+      "name": "Step 1 Status"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cSAzWhxiddg3ScW3s4Rvq8iapL_7hMuVo8iknu2uleg",
+          "mode": "list",
+          "cachedResultName": "SEO Step Status",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cSAzWhxiddg3ScW3s4Rvq8iapL_7hMuVo8iknu2uleg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cSAzWhxiddg3ScW3s4Rvq8iapL_7hMuVo8iknu2uleg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "jobId": "={{ $json.jobId }} ",
+            "step": "={{ $json.step }}",
+            "status": "={{ $json.status }}",
+            "message": "={{ $json.message }}",
+            "userEmail": "={{ $json.userEmail }}",
+            "userURL": "={{ $json.userURL }}",
+            "competitorURL": "={{ $json.competitorURL }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "userURL",
+              "displayName": "userURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "competitorURL",
+              "displayName": "competitorURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "userEmail",
+              "displayName": "userEmail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jobId",
+              "displayName": "jobId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "step",
+              "displayName": "step",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        16,
+        192
+      ],
+      "id": "537bbbc8-b38a-401f-8baf-97e83fc9d998",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "l2YTZVQKUFObEijW",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1cSAzWhxiddg3ScW3s4Rvq8iapL_7hMuVo8iknu2uleg",
+          "mode": "list",
+          "cachedResultName": "SEO Step Status",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cSAzWhxiddg3ScW3s4Rvq8iapL_7hMuVo8iknu2uleg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cSAzWhxiddg3ScW3s4Rvq8iapL_7hMuVo8iknu2uleg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "status"
+          ],
+          "schema": [
+            {
+              "id": "userURL",
+              "displayName": "userURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "competitorURL",
+              "displayName": "competitorURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "userEmail",
+              "displayName": "userEmail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "jobId",
+              "displayName": "jobId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "step",
+              "displayName": "step",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "isValid",
+              "displayName": "isValid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "targetURL",
+              "displayName": "targetURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "siteType",
+              "displayName": "siteType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "myNewField",
+              "displayName": "myNewField",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "threadId",
+              "displayName": "threadId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "labelIds",
+              "displayName": "labelIds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4352,
+        16
+      ],
+      "id": "7588f53d-1e6c-4970-a2fc-c6cef8c12af7",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "l2YTZVQKUFObEijW",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of $input.all()) {\n\n  const clean = (t) =>\n    (t || \"\")\n      .replace(/&amp;/g, \"&\")\n      .replace(/&#8217;/g, \"'\")\n      .replace(/\\s+/g, \" \")\n      .trim();\n\n  const all = $input.all();\n\n  if (all.length < 2) continue;\n\n  const userData = all[0].json;\n  const compData = all[1].json;\n\n  output.push({\n    json: {\n\n      // ✅ ADD THIS (IMPORTANT)\n      userEmail: userData.userEmail,\n      jobId: userData.jobId,\n      userURL: userData.userURL,\n      competitorURL: userData.competitorURL,\n\n      user: {\n        url: userData.userURL,\n        title: clean(userData.title),\n        h1: clean(userData.h1 || userData.title),\n        meta: clean(userData.metaDescription),\n        content: clean(userData.bodyText).slice(0, 800)\n      },\n\n      competitor: {\n        url: compData.competitorURL,\n        title: clean(compData.title),\n        h1: clean(compData.h1 || compData.title),\n        meta: clean(compData.metaDescription || compData.title),\n        content: clean(compData.bodyText).slice(0, 800)\n      }\n    }\n  });\n\n  break;\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        496
+      ],
+      "id": "b7fccfda-4cde-419b-9e20-59125f7e3ccd",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        352
+      ],
+      "id": "2d47262e-c7e3-4716-9ceb-2cbc60a45783",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kOhVuT6aVRN54KYs",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3424,
+        352
+      ],
+      "id": "20870147-050b-4bc7-9219-79a5abe0b7ad",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kOhVuT6aVRN54KYs",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Validate and Normalize": {
+      "main": [
+        [
+          {
+            "node": "IF Valid Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid Input": {
+      "main": [
+        [
+          {
+            "node": "Set User Target",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Competitor Target",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Validation Error Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set User Target": {
+      "main": [
+        [
+          {
+            "node": "Filter User URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Competitor Target": {
+      "main": [
+        [
+          {
+            "node": "Filter Competitor URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter User URLs": {
+      "main": [
+        [
+          {
+            "node": "Merge Job IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Competitor URLs": {
+      "main": [
+        [
+          {
+            "node": "Merge Job IDs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI Gap Analysis": {
+      "main": [
+        [
+          {
+            "node": "Parse Gap Analysis Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Generate Report": {
+      "main": [
+        [
+          {
+            "node": "EXTRACT REPORT HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Report Email": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Job IDs": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXTRACT DATA": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXTRACT REPORT HTML": {
+      "main": [
+        [
+          {
+            "node": "Send Report Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generate Job ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "EXTRACT DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Gap Analysis Response": {
+      "main": [
+        [
+          {
+            "node": "AI Generate Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Job ID": {
+      "main": [
+        [
+          {
+            "node": "Return Job ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Job ID": {
+      "main": [
+        [
+          {
+            "node": "Step 1 Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1 Status": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Validate and Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Gap Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Gap Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Generate Report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "094a03f8-cbc3-4ccb-809d-3957c94b4535",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ca229486879688ee6015d8ac015584cfbf35615398e73c62051ae01ed19542c5"
+  },
+  "id": "fT9svlXRejlXbZVa",
+  "tags": []
+}
